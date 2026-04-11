@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, Lock, CreditCard, Check, AlertTriangle, ChevronRight, ShieldCheck, RefreshCw } from 'lucide-react';
+import { X, Lock, CreditCard, Check, AlertTriangle, ChevronRight, ShieldCheck, RefreshCw, Sparkles } from 'lucide-react';
 
 // ─── TYPES ───────────────────────────────────────────────────────────────────
 interface CartItem {
@@ -9,6 +9,8 @@ interface CartItem {
 
 interface CheckoutModalProps {
       items: CartItem[];
+      isSubscription?: boolean;
+      onSuccess: () => void;
       onClose: () => void;
 }
 
@@ -117,7 +119,7 @@ const CardVisual: React.FC<{ number: string; name: string; expiry: string; flipp
 // ─── MAIN CHECKOUT ────────────────────────────────────────────────────────────
 type Step = 'form' | 'processing' | 'success' | 'error' | 'auth3d';
 
-const CheckoutModal: React.FC<CheckoutModalProps> = ({ items, onClose }) => {
+const CheckoutModal: React.FC<CheckoutModalProps> = ({ items, isSubscription, onSuccess, onClose }) => {
       const [step, setStep] = useState<Step>('form');
       const [cardNumber, setCardNumber] = useState('');
       const [cardName, setCardName] = useState('');
@@ -130,8 +132,8 @@ const CheckoutModal: React.FC<CheckoutModalProps> = ({ items, onClose }) => {
       const [processingProgress, setProcessingProgress] = useState(0);
 
       const subtotal = items.reduce((s, i) => s + i.price * i.qty, 0);
-      const shipping = subtotal >= 150 ? 0 : 19.90;
-      const total = subtotal + shipping;
+      const shipping = isSubscription || subtotal >= 150 ? 0 : 19.90;
+      const total = isSubscription ? 59.90 : (subtotal + shipping);
 
       // Simulate processing progress
       useEffect(() => {
@@ -165,18 +167,42 @@ const CheckoutModal: React.FC<CheckoutModalProps> = ({ items, onClose }) => {
             return Object.keys(e).length === 0;
       };
 
-      const handlePay = () => {
+      const handlePay = async () => {
             if (!validate()) return;
             setStep('processing');
-            const rawNum = cardNumber.replace(/\s/g, '');
 
-            setTimeout(() => {
-                  if (rawNum === '4242424242424242') setStep('success');
-                  else if (rawNum === '4000000000000002') setStep('error');
-                  else if (rawNum === '4000002520003155') setStep('auth3d');
-                  else if (luhnCheck(rawNum)) setStep('success'); // any valid card = success in test
-                  else setStep('error');
-            }, 2800);
+            try {
+                  const response = await fetch('http://localhost:5000/api/create-preference', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                              items: items,
+                              isSubscription: isSubscription,
+                              email: email
+                        })
+                  });
+                  const data = await response.json();
+                  
+                  if (data.init_point) {
+                        setProcessingProgress(100);
+                        // Pequeno delay para o usuário ver o progresso finalizando
+                        setTimeout(() => {
+                            window.location.href = data.init_point;
+                        }, 500);
+                        return;
+                  }
+                  
+                  throw new Error('Prefrence creation failed');
+            } catch (err) {
+                  console.error("Erro ao conectar com o Mercado Pago:", err);
+                  setStep('error');
+            }
+      };
+
+
+      const handleSuccessClose = () => {
+            onSuccess();
+            onClose();
       };
 
       const inputClass = (field: string) =>
@@ -196,10 +222,10 @@ const CheckoutModal: React.FC<CheckoutModalProps> = ({ items, onClose }) => {
                                     <div className="flex items-center justify-between p-5 border-b border-white/5">
                                           <div>
                                                 <h2 className="font-display text-lg font-bold text-white flex items-center gap-2">
-                                                      <Lock size={16} className="text-indigo-400" /> Checkout Seguro
+                                                      <Lock size={16} className="text-indigo-400" /> {isSubscription ? 'Ativar Assinatura' : 'Checkout Seguro'}
                                                 </h2>
                                                 <p className="text-xs text-gray-500 mt-0.5 flex items-center gap-1">
-                                                      <ShieldCheck size={10} className="text-green-400" /> Pagamento protegido por Stripe · {localStorage.getItem('stripe_pub_key')?.startsWith('pk_live') ? 'Modo Produção' : 'Modo de teste'} ({localStorage.getItem('stripe_pub_key')?.slice(0, 12)}...)
+                                                      <ShieldCheck size={10} className="text-green-400" /> Pagamento processado por Mercado Pago
                                                 </p>
                                           </div>
                                           <button onClick={onClose} className="w-8 h-8 rounded-xl glass flex items-center justify-center hover:bg-white/10 transition-colors">
@@ -294,23 +320,43 @@ const CheckoutModal: React.FC<CheckoutModalProps> = ({ items, onClose }) => {
 
                                                 {/* ORDER SUMMARY */}
                                                 <div className="glass rounded-2xl p-4 border border-white/5">
-                                                      <p className="text-xs text-gray-400 uppercase tracking-wider font-medium mb-3">Resumo do Pedido</p>
-                                                      {items.map(item => (
-                                                            <div key={item.id} className="flex items-center gap-3 mb-2">
-                                                                  <img src={item.cover} alt={item.title} className="w-8 h-11 object-cover rounded" />
-                                                                  <div className="flex-1 min-w-0">
-                                                                        <p className="text-white text-xs font-medium truncate">{item.title}</p>
-                                                                        <p className="text-gray-500 text-xs">x{item.qty}</p>
+                                                      <p className="text-xs text-gray-400 uppercase tracking-wider font-medium mb-3">
+                                                            {isSubscription ? 'Resumo da Assinatura' : 'Resumo do Pedido'}
+                                                      </p>
+                                                      
+                                                      {isSubscription ? (
+                                                            <div className="flex items-center gap-3 mb-2">
+                                                                  <div className="w-10 h-10 rounded-lg bg-indigo-500/20 flex items-center justify-center text-indigo-400">
+                                                                        <Sparkles size={20} />
                                                                   </div>
-                                                                  <p className="text-amber-400 text-sm font-semibold flex-shrink-0">R$ {(item.price * item.qty).toFixed(2).replace('.', ',')}</p>
+                                                                  <div className="flex-1">
+                                                                        <p className="text-white text-xs font-bold font-display">Clube Além do Véu — Mensal</p>
+                                                                        <p className="text-gray-500 text-[10px]">Lançamento do mês + Benefícios</p>
+                                                                  </div>
+                                                                  <p className="text-amber-400 text-sm font-semibold">R$ 59,90</p>
                                                             </div>
-                                                      ))}
+                                                      ) : (
+                                                            items.map(item => (
+                                                                  <div key={item.id} className="flex items-center gap-3 mb-2">
+                                                                        <img src={item.cover} alt={item.title} className="w-8 h-11 object-cover rounded" />
+                                                                        <div className="flex-1 min-w-0">
+                                                                              <p className="text-white text-xs font-medium truncate">{item.title}</p>
+                                                                              <p className="text-gray-500 text-xs">x{item.qty}</p>
+                                                                        </div>
+                                                                        <p className="text-amber-400 text-sm font-semibold flex-shrink-0">R$ {(item.price * item.qty).toFixed(2).replace('.', ',')}</p>
+                                                                  </div>
+                                                            ))
+                                                      )}
                                                       <div className="border-t border-white/5 mt-3 pt-3 space-y-1">
-                                                            <div className="flex justify-between text-xs text-gray-500"><span>Subtotal</span><span>R$ {subtotal.toFixed(2).replace('.', ',')}</span></div>
-                                                            <div className="flex justify-between text-xs"><span className="text-gray-500">Frete</span><span className={shipping === 0 ? 'text-green-400' : 'text-gray-400'}>{shipping === 0 ? 'Grátis' : `R$ ${shipping.toFixed(2).replace('.', ',')}`}</span></div>
+                                                            {!isSubscription && (
+                                                                  <>
+                                                                        <div className="flex justify-between text-xs text-gray-500"><span>Subtotal</span><span>R$ {subtotal.toFixed(2).replace('.', ',')}</span></div>
+                                                                        <div className="flex justify-between text-xs"><span className="text-gray-500">Frete</span><span className={shipping === 0 ? 'text-green-400' : 'text-gray-400'}>{shipping === 0 ? 'Grátis' : `R$ ${shipping.toFixed(2).replace('.', ',')}`}</span></div>
+                                                                  </>
+                                                            )}
                                                             <div className="flex justify-between font-bold text-sm pt-1 border-t border-white/5 mt-1">
                                                                   <span className="text-white">Total</span>
-                                                                  <span className="text-amber-400">R$ {total.toFixed(2).replace('.', ',')}</span>
+                                                                  <span className="text-amber-400">R$ {total.toFixed(2).replace('.', ',')} /mês</span>
                                                             </div>
                                                       </div>
                                                 </div>
@@ -326,7 +372,7 @@ const CheckoutModal: React.FC<CheckoutModalProps> = ({ items, onClose }) => {
                                                 <ChevronRight size={15} />
                                           </button>
                                           <p className="text-center text-xs text-gray-600 mt-2 flex items-center justify-center gap-1">
-                                                <ShieldCheck size={10} /> Ambiente de teste Stripe — nenhum valor real será cobrado
+                                                <ShieldCheck size={10} /> Ambiente seguro Mercado Pago
                                           </p>
                                     </div>
                               </>
@@ -369,8 +415,12 @@ const CheckoutModal: React.FC<CheckoutModalProps> = ({ items, onClose }) => {
                                           <Check size={36} className="text-white" strokeWidth={3} />
                                     </motion.div>
                                     <div>
-                                          <h2 className="font-display text-2xl font-bold text-white">Pagamento Aprovado!</h2>
-                                          <p className="text-gray-400 text-sm mt-2">Obrigado pela sua compra. Você receberá um email de confirmação em breve.</p>
+                                          <h2 className="font-display text-2xl font-bold text-white">{isSubscription ? 'Assinatura Ativada!' : 'Pagamento Aprovado!'}</h2>
+                                          <p className="text-gray-400 text-sm mt-2">
+                                                {isSubscription 
+                                                      ? 'Bem-vindo ao Clube Além do Véu. Você receberá seu primeiro box em breve!' 
+                                                      : 'Obrigado pela sua compra. Você receberá um email de confirmação em breve.'}
+                                          </p>
                                     </div>
                                     <div className="glass rounded-2xl p-4 border border-white/5 w-full text-left">
                                           <p className="text-xs text-gray-500 mb-2">Detalhes do pedido</p>
@@ -383,10 +433,10 @@ const CheckoutModal: React.FC<CheckoutModalProps> = ({ items, onClose }) => {
                                                 <span className="text-white font-mono text-xs">#{Math.random().toString(36).slice(2, 10).toUpperCase()}</span>
                                           </div>
                                           <div className="mt-2 flex items-center gap-1.5 text-xs text-green-400">
-                                                <ShieldCheck size={12} /> Pagamento verificado via Stripe
+                                                <ShieldCheck size={12} /> Pagamento verificado via Mercado Pago
                                           </div>
                                     </div>
-                                    <button onClick={onClose}
+                                    <button onClick={handleSuccessClose}
                                           className="w-full py-3 rounded-xl text-white font-semibold text-sm transition-all active:scale-95"
                                           style={{ background: 'linear-gradient(135deg, #059669, #047857)' }}>
                                           Concluir

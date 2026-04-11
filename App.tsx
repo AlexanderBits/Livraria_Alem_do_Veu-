@@ -2,7 +2,7 @@ import React, { useState, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   BookOpen, ShoppingCart, X, Plus, Minus, Star, Search,
-  Menu, ChevronRight, Heart, ArrowLeft, Sparkles, Mail, Phone, MapPin, Instagram, Facebook, LayoutDashboard
+  Menu, ChevronRight, Heart, ArrowLeft, Sparkles, Mail, Phone, MapPin, Instagram, Facebook, LayoutDashboard, Check
 } from 'lucide-react';
 import { AdminPanel, AdminLogin } from './AdminPanel';
 import CheckoutModal from './CheckoutModal';
@@ -33,11 +33,11 @@ const BOOKS: Book[] = [
     price: 49.90,
     originalPrice: 69.90,
     category: "Espiritualidade",
-    cover: "https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?w=300&h=420&fit=crop",
+    cover: "https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?w=400&h=600&fit=crop",
     rating: 4.9,
     reviews: 2847,
     description: "Um guia para a iluminação espiritual. Eckhart Tolle mostra como viver plenamente no momento presente, libertando-se da mente que cria sofrimento.",
-    badge: "Mais Vendido"
+    badge: "Bestseller"
   },
   {
     id: 2,
@@ -45,11 +45,11 @@ const BOOKS: Book[] = [
     author: "William P. Young",
     price: 39.90,
     category: "Ficção Cristã",
-    cover: "https://images.unsplash.com/photo-1512820790803-83ca734da794?w=300&h=420&fit=crop",
+    cover: "https://images.unsplash.com/photo-1512820790803-83ca734da794?w=400&h=600&fit=crop",
     rating: 4.8,
     reviews: 1923,
     description: "Uma história profundamente tocante sobre cura, amor e redenção. Um homem devastado pela tragédia recebe um convite misterioso que mudará sua vida.",
-    badge: "Novo"
+    badge: "Destaque"
   },
   {
     id: 3,
@@ -57,7 +57,7 @@ const BOOKS: Book[] = [
     author: "Gabriel Morais",
     price: 54.90,
     category: "Desenvolvimento Espiritual",
-    cover: "https://images.unsplash.com/photo-1519681393784-d120267933ba?w=300&h=420&fit=crop",
+    cover: "https://images.unsplash.com/photo-1519681393784-d120267933ba?w=400&h=600&fit=crop",
     rating: 4.7,
     reviews: 834,
     description: "Uma jornada pelos mistérios da alma humana e sua conexão com o universo. Reflexões profundas sobre o propósito da vida e o além.",
@@ -69,12 +69,13 @@ const BOOKS: Book[] = [
     price: 44.90,
     originalPrice: 59.90,
     category: "Espiritualidade",
-    cover: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=300&h=420&fit=crop",
+    cover: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&h=600&fit=crop",
     rating: 4.6,
     reviews: 612,
     description: "Uma exploração poética dos estados do ser e da consciência, tecendo filosofia oriental com sabedoria ocidental de forma única.",
-    badge: "Promoção"
+    badge: "50% OFF"
   },
+
   {
     id: 5,
     title: "Luz nas Trevas",
@@ -128,15 +129,22 @@ const CATEGORIES = ["Todos", "Espiritualidade", "Ficção Cristã", "Desenvolvim
 
 // ─── LOGO COMPONENT ──────────────────────────────────────────────────────────
 const Logo: React.FC<{ size?: 'sm' | 'md' | 'lg' }> = ({ size = 'md' }) => {
-  const heights = { sm: 180, md: 180, lg: 180 };
+  const heights = { sm: 40, md: 60, lg: 80 };
   return (
-    <img
-      src="/logo.png"
-      alt="Além do Véu — Cler Editora"
-      style={{ height: heights[size], width: 'auto', objectFit: 'contain' }}
-    />
+    <div className="flex items-center gap-3">
+      <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-indigo-500 to-amber-500 p-[1px]">
+        <div className="w-full h-full bg-[#080720] rounded-xl flex items-center justify-center">
+            <BookOpen size={24} className="text-white" />
+        </div>
+      </div>
+      <div className="flex flex-col">
+        <span className="font-display text-lg font-bold text-white tracking-tight leading-none">ALÉM DO VÉU</span>
+        <span className="text-[10px] text-amber-500 font-bold tracking-[0.2em] uppercase">Cler Editora</span>
+      </div>
+    </div>
   );
 };
+
 
 // ─── STAR RATING ─────────────────────────────────────────────────────────────
 const Stars: React.FC<{ rating: number; count?: number }> = ({ rating, count }) => (
@@ -154,47 +162,56 @@ const BookCard: React.FC<{ book: Book; onAdd: (b: Book) => void; onView: (b: Boo
   return (
     <motion.div
       layout
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      exit={{ opacity: 0, scale: 0.9 }}
-      className="book-card group relative glass rounded-2xl overflow-hidden cursor-pointer"
+      initial={{ opacity: 0, scale: 0.95 }}
+      whileInView={{ opacity: 1, scale: 1 }}
+      viewport={{ once: true }}
+      whileHover={{ y: -5 }}
+      className="book-card group relative glass rounded-[2rem] overflow-hidden cursor-pointer border border-white/5 hover:border-indigo-500/30 transition-all duration-500"
     >
+      <div className="absolute inset-0 bg-gradient-to-br from-indigo-600/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none" />
+      
       {book.badge && (
-        <div className="absolute top-3 left-3 z-10 px-2 py-0.5 rounded-full text-xs font-semibold bg-gradient-to-r from-amber-500 to-amber-600 text-amber-950">
+        <div className="absolute top-4 left-4 z-20 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest bg-amber-400 text-amber-950 shadow-lg shadow-amber-900/20">
           {book.badge}
         </div>
       )}
-      <button onClick={() => setWished(!wished)} className="absolute top-3 right-3 z-10 w-8 h-8 rounded-full glass flex items-center justify-center transition-colors hover:bg-white/10">
-        <Heart size={14} className={wished ? 'fill-red-400 text-red-400' : 'text-gray-400'} />
+      
+      <button 
+        onClick={(e) => { e.stopPropagation(); setWished(!wished); }} 
+        className="absolute top-4 right-4 z-20 w-10 h-10 rounded-full glass border border-white/10 flex items-center justify-center transition-all hover:scale-110 active:scale-95"
+      >
+        <Heart size={16} className={wished ? 'fill-red-500 text-red-500' : 'text-white/40'} />
       </button>
 
-      <div className="relative h-52 overflow-hidden" onClick={() => onView(book)}>
-        <img src={book.cover} alt={book.title} className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" />
-        <div className="book-overlay absolute inset-0 bg-gradient-to-t from-navy-950 via-navy-950/60 to-transparent flex items-end justify-center pb-4">
-          <button onClick={(e) => { e.stopPropagation(); onView(book); }} className="px-4 py-2 bg-indigo-600 hover:bg-indigo-500 rounded-full text-sm text-white font-medium transition-colors flex items-center gap-1">
-            Ver Detalhes <ChevronRight size={14} />
-          </button>
-        </div>
+      <div className="relative h-64 overflow-hidden pt-4 px-4" onClick={() => onView(book)}>
+        <motion.img 
+            src={book.cover} 
+            alt={book.title} 
+            className="w-full h-full object-cover rounded-2xl shadow-xl transition-transform duration-700 group-hover:scale-105" 
+        />
+        <div className="absolute inset-0 bg-gradient-to-t from-[#080720] via-transparent to-transparent opacity-60" />
       </div>
 
-      <div className="p-4 space-y-2">
-        <div>
-          <p className="text-xs text-indigo-400 font-medium uppercase tracking-wider">{book.category}</p>
-          <h3 className="text-white font-display font-semibold text-base leading-tight mt-0.5 line-clamp-1">{book.title}</h3>
-          <p className="text-sm text-gray-400">{book.author}</p>
+      <div className="p-6 space-y-4">
+        <div onClick={() => onView(book)}>
+          <p className="text-[10px] text-amber-500 font-bold uppercase tracking-[0.2em] mb-1">{book.category}</p>
+          <h3 className="text-white font-display font-bold text-lg leading-tight group-hover:text-indigo-400 transition-colors line-clamp-1">{book.title}</h3>
+          <p className="text-sm text-gray-500 font-medium">{book.author}</p>
         </div>
-        <Stars rating={book.rating} count={book.reviews} />
-        <div className="flex items-center justify-between pt-1">
+
+        <div className="flex items-center justify-between pt-2 border-t border-white/5">
           <div>
-            {book.originalPrice && <p className="text-xs text-gray-500 line-through">R$ {book.originalPrice.toFixed(2).replace('.', ',')}</p>}
-            <p className="text-lg font-bold text-white">R$ <span className="text-amber-400">{book.price.toFixed(2).replace('.', ',')}</span></p>
+            {book.originalPrice && <p className="text-xs text-gray-600 line-through mb-0.5">R$ {book.originalPrice.toFixed(2).replace('.', ',')}</p>}
+            <p className="text-xl font-black text-white">
+                <span className="text-sm font-normal text-gray-400 mr-1">R$</span>
+                {book.price.toFixed(2).replace('.', ',')}
+            </p>
           </div>
           <button
-            onClick={() => onAdd(book)}
-            className="flex items-center gap-1.5 px-3 py-2 bg-indigo-600 hover:bg-indigo-500 active:scale-95 rounded-xl text-white text-sm font-medium transition-all"
+            onClick={(e) => { e.stopPropagation(); onAdd(book); }}
+            className="relative z-30 w-12 h-12 bg-white text-navy-950 hover:bg-indigo-500 hover:text-white rounded-2xl flex items-center justify-center transition-all duration-300 shadow-xl active:scale-90"
           >
-            <ShoppingCart size={14} />
-            Comprar
+            <Plus size={20} />
           </button>
         </div>
       </div>
@@ -202,9 +219,12 @@ const BookCard: React.FC<{ book: Book; onAdd: (b: Book) => void; onView: (b: Boo
   );
 };
 
+
 // ─── CART DRAWER ──────────────────────────────────────────────────────────────
-const CartDrawer: React.FC<{ items: CartItem[]; onClose: () => void; onUpdate: (id: number, d: number) => void; onRemove: (id: number) => void; onCheckout: () => void }> = ({ items, onClose, onUpdate, onRemove, onCheckout }) => {
-  const total = items.reduce((s, i) => s + i.price * i.qty, 0);
+const CartDrawer: React.FC<{ items: CartItem[]; isPremium: boolean; onClose: () => void; onUpdate: (id: number, d: number) => void; onRemove: (id: number) => void; onCheckout: () => void }> = ({ items, isPremium, onClose, onUpdate, onRemove, onCheckout }) => {
+  const subtotal = items.reduce((s, i) => s + i.price * i.qty, 0);
+  const discount = isPremium ? subtotal * 0.1 : 0;
+  const total = subtotal - discount;
   return (
     <motion.div className="fixed inset-0 z-50 flex justify-end" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
       <div className="absolute inset-0 bg-black/70 backdrop-blur-sm" onClick={onClose} />
@@ -264,13 +284,21 @@ const CartDrawer: React.FC<{ items: CartItem[]; onClose: () => void; onUpdate: (
             <div className="p-6 border-t border-white/10 space-y-4">
               <div className="flex justify-between">
                 <span className="text-gray-400">Subtotal</span>
-                <span className="text-white font-bold">R$ {total.toFixed(2).replace('.', ',')}</span>
+                <span className="text-white font-bold">R$ {subtotal.toFixed(2).replace('.', ',')}</span>
               </div>
+              {isPremium && (
+                <div className="flex justify-between text-green-400 text-sm">
+                  <span>Desconto Premium (10%)</span>
+                  <span>- R$ {discount.toFixed(2).replace('.', ',')}</span>
+                </div>
+              )}
               <div className="flex justify-between">
                 <span className="text-gray-400">Frete</span>
-                <span className="text-green-400 text-sm font-medium">Grátis acima de R$ 150</span>
+                <span className={isPremium ? "text-green-400 text-sm font-bold" : "text-green-400 text-sm font-medium"}>
+                  {isPremium ? "Grátis (Membro)" : "Grátis acima de R$ 150"}
+                </span>
               </div>
-              <div className="flex justify-between text-lg font-bold">
+              <div className="flex justify-between text-lg font-bold border-t border-white/5 pt-4">
                 <span className="text-white">Total</span>
                 <span className="text-amber-400">R$ {total.toFixed(2).replace('.', ',')}</span>
               </div>
@@ -340,11 +368,29 @@ const App: React.FC = () => {
   const [selectedBook, setSelectedBook] = useState<Book | null>(null);
   const [search, setSearch] = useState('');
   const [category, setCategory] = useState('Todos');
+  const [navFilter, setNavFilter] = useState('Catálogo');
   const [menuOpen, setMenuOpen] = useState(false);
-  // ── Shared book state (admin can edit) ──
   const [bookList, setBookList] = useState<Book[]>(BOOKS as Book[]);
-
+  const [isPremium, setIsPremium] = useState(false);
   const [checkoutOpen, setCheckoutOpen] = useState(false);
+  const [subscriptionMode, setSubscriptionMode] = useState(false);
+
+  const scrollToCatalog = () => {
+    const el = document.getElementById('catalogo');
+    if (el) el.scrollIntoView({ behavior: 'smooth' });
+  };
+
+  const handleNavClick = (item: string) => {
+    setNavFilter(item);
+    if (item === 'Catálogo') {
+      setCategory('Todos');
+      setSearch('');
+      scrollToCatalog();
+    } else {
+      scrollToCatalog();
+    }
+    setMenuOpen(false);
+  };
 
   const cartCount = cart.reduce((s, i) => s + i.qty, 0);
 
@@ -368,7 +414,12 @@ const App: React.FC = () => {
   const filtered = bookList.filter(b => {
     const matchSearch = b.title.toLowerCase().includes(search.toLowerCase()) || b.author.toLowerCase().includes(search.toLowerCase());
     const matchCat = category === 'Todos' || b.category === category;
-    return matchSearch && matchCat;
+    
+    let matchNav = true;
+    if (navFilter === 'Novidades') matchNav = b.badge === 'Destaque' || b.badge === 'Bestseller' || b.badge === 'Destaque';
+    if (navFilter === 'Promoções') matchNav = b.originalPrice !== undefined || (b.badge && b.badge.includes('OFF'));
+
+    return matchSearch && matchCat && matchNav;
   });
 
   // ── Admin routing ──
@@ -378,37 +429,45 @@ const App: React.FC = () => {
   return (
     <div className="min-h-screen" style={{ background: '#080720' }}>
       {/* NAVBAR */}
-      <nav className="sticky top-0 z-40 glass border-b border-white/5">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 h-[180px] flex items-center justify-between">
+      <nav className="sticky top-0 z-40 backdrop-blur-md bg-[#080720]/80 border-b border-white/5">
+        <div className="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
           <Logo size="sm" />
-          <div className="hidden md:flex items-center gap-8">
-            {['Catálogo', 'Novidades', 'Promoções', 'Sobre'].map(item => (
-              <button key={item} className="nav-link text-sm text-gray-300 hover:text-white transition-colors font-medium">{item}</button>
+          <div className="hidden md:flex items-center gap-10">
+            {['Catálogo', 'Novidades', 'Promoções'].map(item => (
+              <button 
+                key={item} 
+                onClick={() => handleNavClick(item)}
+                className={`text-[11px] uppercase tracking-[0.2em] font-bold transition-all ${navFilter === item ? 'text-amber-400' : 'text-gray-400 hover:text-white'}`}
+              >
+                {item}
+              </button>
             ))}
-          </div>
-          <div className="flex items-center gap-3">
-            <button onClick={() => setView('admin-login')}
-              className="hidden md:flex items-center gap-1.5 px-3 py-2 glass hover:bg-white/10 rounded-xl transition-colors text-xs text-gray-500 hover:text-gray-300">
-              <LayoutDashboard size={14} />
-              Admin
+            <button 
+              onClick={() => setIsPremium(!isPremium)}
+              className={`px-5 py-2 rounded-full text-[10px] font-black uppercase tracking-widest transition-all ${isPremium ? 'bg-amber-400 text-amber-950 shadow-lg shadow-amber-400/20' : 'bg-indigo-600/10 text-indigo-400 border border-indigo-500/30'}`}
+            >
+              {isPremium ? 'Membro Premium' : 'Seja Premium'}
             </button>
+          </div>
+          <div className="flex items-center gap-4">
             <button
               onClick={() => setCartOpen(true)}
-              className="relative flex items-center gap-1.5 px-3 py-2 glass hover:bg-white/10 rounded-xl transition-colors"
+              className="relative w-12 h-12 rounded-2xl glass border border-white/10 flex items-center justify-center transition-all hover:bg-white/5"
             >
-              <ShoppingCart size={18} className="text-gray-300" />
+              <ShoppingCart size={18} className="text-white" />
               {cartCount > 0 && (
-                <span className="cart-badge absolute -top-1 -right-1 w-5 h-5 bg-indigo-600 rounded-full text-xs text-white font-bold flex items-center justify-center">
+                <span className="absolute -top-1 -right-1 w-5 h-5 bg-indigo-500 rounded-full text-[10px] text-white font-black flex items-center justify-center shadow-lg">
                   {cartCount}
                 </span>
               )}
             </button>
-            <button onClick={() => setMenuOpen(!menuOpen)} className="md:hidden w-8 h-8 glass rounded-lg flex items-center justify-center">
-              <Menu size={16} className="text-gray-300" />
+            <button onClick={() => setMenuOpen(!menuOpen)} className="md:hidden w-12 h-12 glass rounded-2xl flex items-center justify-center">
+              <Menu size={18} className="text-white" />
             </button>
           </div>
         </div>
       </nav>
+
 
       {/* MOBILE MENU */}
       <AnimatePresence>
@@ -416,93 +475,176 @@ const App: React.FC = () => {
           <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }}
             className="fixed top-16 left-0 right-0 z-30 glass border-b border-white/10 p-4 flex flex-col gap-3 md:hidden">
             {['Catálogo', 'Novidades', 'Promoções', 'Sobre'].map(item => (
-              <button key={item} onClick={() => setMenuOpen(false)} className="text-gray-300 hover:text-white text-sm py-2 text-left font-medium">{item}</button>
+              <button 
+                key={item} 
+                onClick={() => handleNavClick(item)} 
+                className={`text-sm py-2 text-left font-medium transition-colors ${navFilter === item ? 'text-amber-400' : 'text-gray-300 hover:text-white'}`}
+              >
+                {item}
+              </button>
             ))}
           </motion.div>
         )}
       </AnimatePresence>
 
       {/* HERO */}
-      <section className="relative overflow-hidden py-20 px-4">
-        <div className="hero-glow absolute inset-0 pointer-events-none" />
-        <div className="absolute inset-0 pointer-events-none" style={{ background: 'radial-gradient(ellipse 50% 60% at 80% 50%, rgba(79, 70, 229, 0.15), transparent)' }} />
-        <div className="max-w-7xl mx-auto flex flex-col lg:flex-row items-center gap-12">
-          <motion.div initial={{ opacity: 0, x: -30 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.7 }} className="flex-1 text-center lg:text-left">
-            <div className="inline-flex items-center gap-2 px-3 py-1.5 glass rounded-full text-xs text-indigo-300 font-medium mb-6 border border-indigo-500/20">
+      <section className="relative overflow-hidden py-32 px-6">
+        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full max-w-7xl aspect-square bg-indigo-600/10 blur-[120px] rounded-full -translate-y-1/2 pointer-events-none" />
+        
+        <div className="max-w-7xl mx-auto flex flex-col lg:flex-row items-center gap-20">
+          <motion.div 
+            initial={{ opacity: 0, x: -50 }} 
+            animate={{ opacity: 1, x: 0 }} 
+            transition={{ duration: 1, ease: "easeOut" }} 
+            className="flex-1 text-center lg:text-left z-10"
+          >
+            <div className="inline-flex items-center gap-2 px-4 py-2 bg-indigo-500/10 border border-indigo-500/20 rounded-full text-[10px] text-indigo-400 font-black uppercase tracking-[0.3em] mb-8">
               <Sparkles size={12} className="text-amber-400" />
-              Parceira oficial Cler Editora
+              Cler Editora apresenta
             </div>
-            <h1 className="font-display text-5xl lg:text-6xl font-bold text-white leading-tight mb-4">
-              Descubra mundos<br />
-              <span className="gold-gradient">Além do Véu</span>
+            <h1 className="font-display text-6xl lg:text-8xl font-black text-white leading-none mb-8">
+              Mundos<br />
+              <span className="bg-clip-text text-transparent bg-gradient-to-r from-amber-200 via-amber-400 to-amber-600">Além do Véu</span>
             </h1>
-            <p className="text-gray-400 text-lg mb-8 max-w-xl mx-auto lg:mx-0">
-              Uma curadoria especial de livros espirituais, de fé e desenvolvimento pessoal. Cada página, uma nova revelação.
+            <p className="text-gray-400 text-lg lg:text-xl mb-12 max-w-xl mx-auto lg:mx-0 leading-relaxed font-medium">
+              A curadoria definitiva de literatura espiritual e desenvolvimento da consciência. Viva a transformação em cada página.
             </p>
-            <div className="flex flex-col sm:flex-row gap-3 justify-center lg:justify-start">
-              <button className="px-6 py-3.5 rounded-xl font-semibold text-white flex items-center justify-center gap-2 transition-all hover:opacity-90 active:scale-95"
-                style={{ background: 'linear-gradient(135deg, #6366f1, #4338ca)' }}>
-                <BookOpen size={18} />
-                Ver Catálogo
+            <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start">
+              <button 
+                onClick={() => handleNavClick('Catálogo')}
+                className="px-10 py-5 rounded-[2rem] font-black text-white flex items-center justify-center gap-3 transition-all hover:scale-105 active:scale-95 shadow-2xl shadow-indigo-600/20 bg-gradient-to-br from-indigo-500 to-indigo-700"
+              >
+                <BookOpen size={20} />
+                EXPLORAR CATÁLOGO
               </button>
-              <button className="px-6 py-3.5 rounded-xl font-semibold text-gray-300 glass hover:bg-white/10 transition-all">
-                Sobre a Editora
+              <button className="px-10 py-5 rounded-[2rem] font-black text-white glass border border-white/10 hover:bg-white/5 transition-all">
+                SOBRE NÓS
               </button>
             </div>
           </motion.div>
-          <motion.div initial={{ opacity: 0, x: 30 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.7, delay: 0.2 }} className="flex-1 flex justify-center">
-            <div className="relative w-72 h-72">
-              <div className="absolute inset-0 rounded-full opacity-20" style={{ background: 'radial-gradient(circle, #6366f1, transparent)' }} />
-              <div className="absolute top-4 left-4 w-36 h-48 rounded-xl overflow-hidden shadow-2xl shadow-indigo-900/50 rotate-[-8deg]">
-                <img src={BOOKS[0].cover} alt="" className="w-full h-full object-cover" />
-              </div>
-              <div className="absolute top-8 right-4 w-36 h-48 rounded-xl overflow-hidden shadow-2xl shadow-indigo-900/50 rotate-[5deg]">
-                <img src={BOOKS[7].cover} alt="" className="w-full h-full object-cover" />
-              </div>
-              <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-36 h-48 rounded-xl overflow-hidden shadow-2xl shadow-indigo-900/50">
-                <img src={BOOKS[4].cover} alt="" className="w-full h-full object-cover" />
+
+          <motion.div 
+            initial={{ opacity: 0, scale: 0.8, rotate: 5 }} 
+            animate={{ opacity: 1, scale: 1, rotate: 0 }} 
+            transition={{ duration: 1.2, ease: "easeOut" }} 
+            className="flex-1 relative"
+          >
+            <div className="relative w-full aspect-square max-w-lg mx-auto">
+              {/* Floating elements backdrop */}
+              <motion.div 
+                animate={{ rotate: 360 }} 
+                transition={{ duration: 30, repeat: Infinity, ease: "linear" }}
+                className="absolute inset-0 border-2 border-dashed border-indigo-500/20 rounded-full" 
+              />
+              
+              <motion.div 
+                animate={{ y: [0, -20, 0] }}
+                transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
+                className="absolute top-0 left-1/4 w-48 h-64 z-20"
+              >
+                <img src={BOOKS[0].cover} alt="" className="w-full h-full object-cover rounded-2xl shadow-2xl rotate-[-12deg] border border-white/10" />
+              </motion.div>
+              
+              <motion.div 
+                animate={{ y: [0, 20, 0] }}
+                transition={{ duration: 5, repeat: Infinity, ease: "easeInOut", delay: 1 }}
+                className="absolute bottom-10 right-1/4 w-48 h-64 z-10"
+              >
+                <img src={BOOKS[7].cover} alt="" className="w-full h-full object-cover rounded-2xl shadow-2xl rotate-[12deg] border border-white/10" />
+              </motion.div>
+              
+              <div className="absolute inset-0 flex items-center justify-center">
+                <div className="w-64 h-64 bg-indigo-500/20 rounded-full blur-[80px]" />
               </div>
             </div>
           </motion.div>
         </div>
       </section>
 
-      {/* STATS BAR */}
-      <div className="py-8 border-y border-white/5">
-        <div className="max-w-7xl mx-auto px-4 grid grid-cols-2 md:grid-cols-4 gap-6 text-center">
-          {[
-            { label: 'Livros disponíveis', value: '500+' },
-            { label: 'Clientes satisfeitos', value: '12.000+' },
-            { label: 'Avaliação média', value: '4.8 ★' },
-            { label: 'Entregas realizadas', value: '35.000+' },
-          ].map(stat => (
-            <div key={stat.label}>
-              <p className="text-2xl font-display font-bold text-amber-400">{stat.value}</p>
-              <p className="text-sm text-gray-500 mt-0.5">{stat.label}</p>
+
+      {/* SUBSCRIPTION PLAN */}
+      <section className="py-24 px-6 relative overflow-hidden">
+        <div className="max-w-6xl mx-auto glass rounded-[3rem] p-12 lg:p-20 border border-white/5 relative overflow-hidden group">
+          <div className="absolute inset-0 bg-gradient-to-br from-indigo-600/20 via-transparent to-amber-500/10 opacity-50" />
+          <div className="absolute -top-24 -right-24 w-96 h-96 bg-indigo-500/20 blur-[100px] rounded-full group-hover:bg-indigo-500/30 transition-all duration-700" />
+          
+          <div className="flex flex-col lg:flex-row items-center gap-16 relative z-10">
+            <div className="flex-1 space-y-8">
+              <div className="inline-flex px-4 py-1.5 bg-amber-400 rounded-full text-[10px] font-black uppercase tracking-widest text-amber-950 shadow-xl shadow-amber-400/20">
+                Lançamento Exclusivo
+              </div>
+              <h2 className="font-display text-5xl font-black text-white leading-tight">Clube do Livro<br /><span className="text-amber-400">Além do Véu</span></h2>
+              <p className="text-gray-400 text-lg leading-relaxed font-medium">
+                Participe da jornada. Receba mensalmente uma obra selecionada por nossa curadoria, edições exclusivas e acesso total aos benefícios premium.
+              </p>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                {[
+                  'Livro Físico Exclusivo',
+                  'Frete Grátis Ilimitado',
+                  '10% OFF Vitalício',
+                  'Conteúdo Digital Extra'
+                ].map(benefit => (
+                  <div key={benefit} className="flex items-center gap-3 text-gray-300 font-semibold text-sm">
+                    <div className="w-6 h-6 rounded-lg bg-indigo-500/20 flex items-center justify-center">
+                      <Check size={14} className="text-indigo-400" />
+                    </div>
+                    {benefit}
+                  </div>
+                ))}
+              </div>
+              <div className="pt-6">
+                <button 
+                  onClick={() => { setSubscriptionMode(true); setCheckoutOpen(true); }}
+                  className="px-10 py-5 rounded-2xl font-black text-white shadow-2xl shadow-amber-500/30 transition-all hover:scale-105 active:scale-95 flex items-center gap-4 bg-gradient-to-br from-amber-400 to-amber-600"
+                >
+                  QUERO FAZER PARTE
+                  <Sparkles size={20} />
+                </button>
+                <p className="text-[10px] text-gray-500 mt-6 uppercase tracking-[0.2em] font-bold">Apenas R$ 59,90/mês · Cancele quando quiser</p>
+              </div>
             </div>
-          ))}
+            <div className="flex-1 relative order-first lg:order-last">
+                <motion.div 
+                    animate={{ y: [0, -15, 0] }}
+                    transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
+                    className="relative z-10 w-full max-w-[320px] mx-auto aspect-[3/4] glass rounded-[2.5rem] border border-white/10 shadow-2xl overflow-hidden p-2"
+                >
+                    <div className="w-full h-full bg-[#0d0b26] rounded-[2.2rem] flex flex-col items-center justify-center p-8 text-center border border-white/5">
+                        <div className="w-20 h-20 bg-gradient-to-br from-amber-400 to-amber-600 rounded-2xl flex items-center justify-center mb-6 shadow-xl shadow-amber-400/20">
+                            <BookOpen size={32} className="text-amber-950" />
+                        </div>
+                        <p className="text-white font-display font-black text-2xl mb-2">BOX MARÇO</p>
+                        <p className="text-amber-500 text-xs font-bold tracking-widest uppercase mb-8">"O Despertar da Alma"</p>
+                        <div className="flex gap-2">
+                             {[1,2,3].map(i => <div key={i} className="w-10 h-10 rounded-full border border-white/10 glass flex items-center justify-center text-[10px] font-bold text-white">M{i}</div>)}
+                        </div>
+                    </div>
+                </motion.div>
+            </div>
+          </div>
         </div>
-      </div>
+      </section>
 
       {/* CATALOG */}
-      <section className="py-16 px-4 max-w-7xl mx-auto">
-        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-8">
-          <div>
-            <h2 className="font-display text-3xl font-bold text-white">Nosso Catálogo</h2>
-            <p className="text-gray-500 mt-1">Escolha sua próxima leitura transformadora</p>
+      <section id="catalogo" className="py-32 px-6 max-w-7xl mx-auto">
+        <div className="flex flex-col md:flex-row items-end justify-between gap-8 mb-16">
+          <div className="space-y-4">
+            <span className="text-[10px] text-indigo-500 font-bold uppercase tracking-[0.4em]">Curadoria Especial</span>
+            <h2 className="font-display text-5xl font-black text-white">Nosso Catálogo</h2>
+            <p className="text-gray-500 font-medium max-w-md">Obras selecionadas para elevar sua consciência e transformar sua visão de mundo.</p>
           </div>
-          <div className="relative w-full sm:w-72">
-            <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500" />
+          <div className="relative w-full md:w-96">
+            <Search size={18} className="absolute left-5 top-1/2 -translate-y-1/2 text-gray-500" />
             <input
               type="text"
               placeholder="Buscar por título ou autor..."
               value={search}
               onChange={e => setSearch(e.target.value)}
-              className="w-full pl-9 pr-4 py-2.5 glass rounded-xl text-sm text-gray-300 placeholder-gray-600 border border-white/10 transition-all"
-              style={{ background: 'rgba(255,255,255,0.03)' }}
+              className="w-full pl-14 pr-6 py-5 glass rounded-[2rem] text-sm text-white placeholder-gray-600 border border-white/10 focus:border-indigo-500/30 transition-all outline-none"
             />
           </div>
         </div>
+
 
         {/* CATEGORIES */}
         <div className="flex gap-2 flex-wrap mb-8">
@@ -585,7 +727,7 @@ const App: React.FC = () => {
       {/* MODALS */}
       <AnimatePresence>
         {cartOpen && (
-          <CartDrawer items={cart} onClose={() => setCartOpen(false)} onUpdate={updateQty} onRemove={removeItem} onCheckout={() => { setCheckoutOpen(true); setCartOpen(false); }} />
+          <CartDrawer items={cart} isPremium={isPremium} onClose={() => setCartOpen(false)} onUpdate={updateQty} onRemove={removeItem} onCheckout={() => { setSubscriptionMode(false); setCheckoutOpen(true); setCartOpen(false); }} />
         )}
       </AnimatePresence>
       <AnimatePresence>
@@ -595,7 +737,12 @@ const App: React.FC = () => {
       </AnimatePresence>
       <AnimatePresence>
         {checkoutOpen && (
-          <CheckoutModal items={cart} onClose={() => setCheckoutOpen(false)} />
+          <CheckoutModal 
+            items={cart} 
+            isSubscription={subscriptionMode} 
+            onSuccess={() => { if (subscriptionMode) setIsPremium(true); }}
+            onClose={() => { setCheckoutOpen(false); setSubscriptionMode(false); }} 
+          />
         )}
       </AnimatePresence>
     </div>
